@@ -52,7 +52,7 @@ jobs:
     - name: Generate Kotlin Bindings
       working-directory: ./wp-backend-rs-emini 
       run: |
-        cargo run --bin uniffi-bindgen generate epub-uniffi/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+        cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
   
     - name: Show all folders
       run: Get-ChildItem -Recurse
