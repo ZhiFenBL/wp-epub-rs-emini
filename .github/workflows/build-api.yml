@@ -1,0 +1,33 @@
+name: API | Rust CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'wp-backend-rs-emini/api/**'
+      
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'wp-backend-rs-emini/api/**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build the API crate
+      working-directory: ./wp-backend-rs-emini 
+      run: cargo build --package api --verbose
+
+    - name: Upload Target as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-target-folder
+        path: wp-backend-rs-emini/target 
+        if-no-files-found: error
