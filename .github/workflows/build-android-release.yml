@@ -1,0 +1,62 @@
+name: Rust-Android arm64-v8a [Temp Save | Encode]
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Main Repo (wp-epub-mini)
+      uses: actions/checkout@v4
+
+    - name: Checkout wp-epub-mini-uniffi-2 repo
+      uses: actions/checkout@v4
+      with: 
+        repository: 'zhifenbl/wp-epub-emini-uniffi'
+        ssh-key: ${{ secrets.LIB_WP_EPUB_REPO_SSH_KEY }}
+        path: wp-epub-mini
+
+    - name: Checkout wattpad-rs-3 repo
+      uses: actions/checkout@v4
+      with:
+        repository: 'zhifenbl/wattpad-rs-emini'
+        ssh-key: ${{ secrets.LIB_WP_RS_REPO_SSH_KEY }}
+        path: wattpad-rs-3
+
+    - name: Install build-ndk
+      run: cargo install cargo-ndk
+
+    - name: Install toolchains
+      run: |
+        rustup target add \
+          aarch64-linux-android \
+          armv7-linux-androideabi \
+          x86_64-linux-android \
+          i686-linux-android
+
+    - name: Build
+      working-directory: ./wp-epub-mini
+      run: cargo ndk --platform 29 -t armeabi-v7a -t arm64-v8a -t x86 -t x86_64 -o ./jniLibs build --release
+
+    - name: Generate Kotlin Bindings
+      run: |
+        cd wp-epub-mini
+        cargo run --bin uniffi-bindgen generate src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+
+    - name: Show all folders
+      run: Get-ChildItem -Recurse
+      shell: pwsh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: builds
+        path: |
+          wp-epub-mini/jniLibs/
+          wp-epub-mini/bindings
