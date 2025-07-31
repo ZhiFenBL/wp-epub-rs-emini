@@ -26,6 +26,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: 'zhifenbl/wattpad-rs-emini'
+        ref: 'login-trial-1'
         ssh-key: ${{ secrets.LIB_WP_RS_REPO_SSH_KEY }}
         path: wattpad-rs-emini
 
