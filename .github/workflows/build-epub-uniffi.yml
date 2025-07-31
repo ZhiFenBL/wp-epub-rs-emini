@@ -1,0 +1,59 @@
+name: EPUB [Uniffi] | Rust CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'wp-backend-rs-emini/epub-uniffi/src/**'
+      - 'wp-backend-rs-emini/epub-uniffi/Cargo.toml'
+      - 'wp-backend-rs-emini/epub-uniffi/.cargo/**'
+      
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'wp-backend-rs-emini/epub-uniffi/src/**'
+      - 'wp-backend-rs-emini/epub-uniffi/Cargo.toml'
+      - 'wp-backend-rs-emini/epub-uniffi/.cargo/**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install build-ndk
+      run: cargo install cargo-ndk
+
+    - name: Install toolchains
+      run: |
+        rustup target add \
+          aarch64-linux-android \
+          armv7-linux-androideabi \
+          x86_64-linux-android \
+          i686-linux-android
+
+    - name: Build
+      working-directory: ./wp-backend-rs-emini 
+      run: cargo ndk --platform 29 -t armeabi-v7a -t arm64-v8a -t x86 -t x86_64 -o ./jniLibs build --release
+      
+    - name: Generate Kotlin Bindings
+      working-directory: ./wp-backend-rs-emini 
+      run: |
+        cargo run --bin uniffi-bindgen generate epub-uniffi/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+  
+    - name: Show all folders
+      run: Get-ChildItem -Recurse
+      shell: pwsh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: epub-uniffi-builds
+        path: |
+          ./wp-backend-rs-emini/jniLibs
+          ./wp-backend-rs-emini/bindings
+        if-no-files-found: error
