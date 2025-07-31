@@ -22,12 +22,12 @@ jobs:
         ssh-key: ${{ secrets.LIB_WP_EPUB_REPO_SSH_KEY }}
         path: wp-epub-mini
 
-    - name: Checkout wattpad-rs-3 repo
+    - name: Checkout wattpad-rs-emini repo
       uses: actions/checkout@v4
       with:
         repository: 'zhifenbl/wattpad-rs-emini'
         ssh-key: ${{ secrets.LIB_WP_RS_REPO_SSH_KEY }}
-        path: wattpad-rs-3
+        path: wattpad-rs-emini
 
     - name: Install build-ndk
       run: cargo install cargo-ndk
