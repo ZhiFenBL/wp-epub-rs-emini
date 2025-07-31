@@ -15,6 +15,8 @@ on:
       - 'wp-backend-rs-emini/epub-uniffi/Cargo.toml'
       - 'wp-backend-rs-emini/epub-uniffi/.cargo/**'
 
+  workflow_dispatch:
+
 env:
   CARGO_TERM_COLOR: always
 
