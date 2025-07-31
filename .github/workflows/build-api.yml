@@ -4,22 +4,14 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'wp-backend-rs-emini/api/**'
-    paths-ignore:
-      - 'wp-backend-rs-emini/api/**.md'          # Ignore all Markdown files
-      - 'wp-backend-rs-emini/api/LICENSE'         # Ignore the LICENSE file
-      - 'wp-backend-rs-emini/api/.gitignore'      # Ignore the .gitignore file
-      - 'wp-backend-rs-emini/api/docs/**'         # Ignore the entire docs folder
+      - 'wp-backend-rs-emini/api/src/**'
+      - 'wp-backend-rs-emini/api/Cargo.toml'
       
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'wp-backend-rs-emini/api/**'
-    paths-ignore:
-      - 'wp-backend-rs-emini/api/**.md'          # Ignore all Markdown files
-      - 'wp-backend-rs-emini/api/LICENSE'         # Ignore the LICENSE file
-      - 'wp-backend-rs-emini/api/.gitignore'      # Ignore the .gitignore file
-      - 'wp-backend-rs-emini/api/docs/**'         # Ignore the entire docs folder
+      - 'wp-backend-rs-emini/api/src/**'
+      - 'wp-backend-rs-emini/api/Cargo.toml'
 
 env:
   CARGO_TERM_COLOR: always
