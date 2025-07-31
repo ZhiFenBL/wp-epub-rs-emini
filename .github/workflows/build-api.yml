@@ -4,14 +4,14 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'wp-backend-rs-emini/api/src/**'
-      - 'wp-backend-rs-emini/api/Cargo.toml'
+      - 'wp-backend-rs-emini/wattpad-rs/src/**'
+      - 'wp-backend-rs-emini/wattpad-rs/Cargo.toml'
       
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'wp-backend-rs-emini/api/src/**'
-      - 'wp-backend-rs-emini/api/Cargo.toml'
+      - 'wp-backend-rs-emini/wattpad-rs/src/**'
+      - 'wp-backend-rs-emini/wattpad-rs/Cargo.toml'
 
   workflow_dispatch:
 
@@ -27,7 +27,7 @@ jobs:
     
     - name: Build the API crate
       working-directory: ./wp-backend-rs-emini 
-      run: cargo build --package api --verbose
+      run: cargo build --package wattpad-rs --verbose
 
     - name: Upload Target as Artifact
       uses: actions/upload-artifact@v4
