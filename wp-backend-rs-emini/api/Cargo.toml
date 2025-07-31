@@ -1,0 +1,22 @@
+[package]
+name = "wattpad-rs-emini"
+version = "0.1.0"
+edition = "2024"
+license = "AGPL 3.0"
+description = "Minimal asynchronous interface for the Wattpad API."
+homepage = "https://github.com/WattDownload/wattpad-rs-emini"
+repository = "https://github.com/WattDownload/wattpad-rs-emini"
+readme = "README.md"
+keywords = ["wattpad"]
+categories = ["api-bindings"]
+
+[dependencies]
+chrono = { version = "0.4.41", features = ["serde"] } 
+reqwest = { "version" = "0.12.22", default-features = false, features = ["cookies", "gzip", "json", "rustls-tls"] }
+serde = { "version" = "1.0.219", "features" = ["derive"] }
+serde_with = "3.14.0"
+thiserror = "2.0.12"
+zip = "4"
+
+[dev-dependencies]
+tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }

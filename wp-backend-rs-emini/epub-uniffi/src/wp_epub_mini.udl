@@ -1,0 +1,22 @@
+dictionary EpubResult {
+    string title;
+    string output_path;
+};
+
+[Error]
+interface EpubError {
+    Download(string reason);
+
+    // new error variant for login failures
+    Authentication(string reason);
+};
+
+namespace wp_epub_mini {
+    // Define the new login function
+    [Throws=EpubError, Async]
+    void login(string username, string password);
+
+    // The existing download function remains the same
+    [Throws=EpubError, Async]
+    EpubResult download_wattpad_story(i32 story_id, boolean embed_images, u64 concurrent_requests, string output_path);
+};

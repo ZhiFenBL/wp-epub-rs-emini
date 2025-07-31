@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">WPRust</string>
+    <string name="wattpad_link_or_id">Wattpad Link or ID</string>
+    <string name="checkout">Download</string>
+    <string name="about">About</string>
+    <string name="please_wait">Please Wait</string>
+    <string name="startover">Startover</string>
+    <string name="extended_app_name">WPDL [Rust]</string>
+    <string name="retry">Retry</string>
+    <string name="about_app_html">
+<![CDATA[
+    <center>
+        <h3>Wattpad Downloader Android (Rust)</h3>
+        <p>The one and only available Wattpad to EPUB Downloader App for Android!</p>
+        <br>
+        <hr>
+        <p>Copyright &copy; 2025 ZhiFenBL</p>
+        <p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
+        <p>This program is distributed in the hope that it will be useful, but <b>WITHOUT ANY WARRANTY</b>; without even the implied warranty of <b>MERCHANTABILITY</b> or <b>FITNESS FOR A PARTICULAR PURPOSE</b>. See the GNU Affero General Public License for more details.</p>
+        <p>You should have received a copy of the GNU Affero General Public License along with this program. If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+    </center>
+]]>
+</string>
+    <string name="acknowledgements_html">
+<![CDATA[
+    <center>
+        <p>With special thanks to the people who made this app better.</p>
+        <br>
+        <hr>
+        <br>
+
+        <p><b>Aaron BenDaniel</b></p>
+        <p><i>For always helping, actively engaging in direct development, debugging, and robust testing, just like a close friend.</i></p>
+        <p>
+            <a href="https://github.com/aaronbendaniel">GitHub</a> &bull;
+            <a href="https://abendaniel.top">Website</a> &bull;
+            Discord: sowansow
+        </p>
+
+        <br>
+        <hr>
+        <br>
+
+        <p><b>Dhanush Rambhatla</b></p>
+        <p><i>For inspiring the EPUB version of the downloader.</i></p>
+        <p>
+            <a href="https://github.com/theonlywayup">GitHub</a> &bull;
+            <a href="https://rambhat.la">Website</a> &bull;
+            Discord: theonlywayup
+        </p>
+    </center>
+]]>
+</string>
+</resources>

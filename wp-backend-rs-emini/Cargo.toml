@@ -1,0 +1,6 @@
+# emini-project/Cargo.toml
+[workspace]
+members = [
+    "epub-uniffi",
+    "api",
+]
