@@ -21,6 +21,8 @@ on:
       - 'wp-android-emini/build.gradle.kts'
       - 'wp-android-emini/settings.gradle.kts'
 
+  workflow_dispatch:
+
 env:
   CARGO_TERM_COLOR: always
   
