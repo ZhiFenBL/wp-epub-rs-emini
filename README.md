@@ -1,2 +1,1 @@
-# wp-epub-rs-emini
-All rights reserved
+# WP (Downloader) | EPUB | Rust | Extra-Mini
