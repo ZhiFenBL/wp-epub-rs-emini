@@ -102,14 +102,16 @@ jobs:
         cache: gradle
 
     - name: Grant execute permission for gradlew
+      working-directory: ./wp-android-emini
       run: chmod +x gradlew
       
     - name: Assemble debug apk with Gradle
+      working-directory: ./wp-android-emini
       run: ./gradlew assembleDebug
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: debug-apk
-        path: app/build/outputs/apk/debug/*.apk
+        path: wp-android-emini/app/build/outputs/apk/debug/*.apk
         if-no-files-found: error
