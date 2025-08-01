@@ -100,7 +100,6 @@ class DownloadActivity : AppCompatActivity() {
             startDownloadProcess(storyId, isUseImages, username, password)
         } else {
             // The file is already downloaded, just prompt the user to save it.
-            // We assume the title isn't critical here, or it would need to be saved too.
             promptUserToSaveFile("story.epub")
         }
     }
@@ -130,7 +129,7 @@ class DownloadActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
 
-                // MODIFIED: Check for credentials and call the authentication method.
+                // Check for credentials and call the authentication method.
                 if (!username.isNullOrEmpty() && !password.isNullOrEmpty()) {
 
                     uniffi.wp_epub_mini.login(username, password)
