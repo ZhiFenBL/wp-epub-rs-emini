@@ -4,4 +4,4 @@ members = [
     "wp-epub-mini",
     "wattpad-rs",
 ]
-workspace.resolver = "3"
+resolver = "3"
