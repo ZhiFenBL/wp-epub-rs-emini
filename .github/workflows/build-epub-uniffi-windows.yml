@@ -33,7 +33,7 @@ jobs:
 
     - name: Build
       working-directory: ./wp-backend-rs-emini 
-      run: cargo build --release
+      run: cargo build --package wp-epub-mini --release
       
     - name: Generate Kotlin Bindings
       working-directory: ./wp-backend-rs-emini 
