@@ -127,9 +127,12 @@ jobs:
           if [ -f "$apk_file" ]; then
             base_name=$(basename "$apk_file" .apk)
             
-            # Construct the new filename using our explicit variable
-            new_name="${base_name}-${TAG_NAME}.apk"
+            # Replace "app" with "wprust" in the base name
+            renamed_base="${base_name/app/wprust}"
             
+            # Construct the new filename using the renamed base and our explicit variable
+            new_name="${renamed_base}-${TAG_NAME}.apk"
+    
             echo "Renaming $(basename "$apk_file") to $new_name"
             mv "$apk_file" "$RELEASE_DIR/$new_name"
           fi
