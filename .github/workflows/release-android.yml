@@ -1,0 +1,170 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+env:
+    CARGO_TERM_COLOR: always
+
+jobs:
+  build-rust-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install build-ndk
+      run: cargo install cargo-ndk
+
+    - name: Install toolchains
+      run: |
+        rustup target add \
+          aarch64-linux-android \
+          armv7-linux-androideabi \
+          x86_64-linux-android \
+          i686-linux-android
+
+    - name: Build
+      working-directory: ./wp-backend-rs-emini 
+      run: cargo ndk --platform 29 -t armeabi-v7a -t arm64-v8a -t x86 -t x86_64 -o ./jniLibs build --release
+      
+    - name: Generate Kotlin Bindings
+      working-directory: ./wp-backend-rs-emini 
+      run: |
+        cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+  
+    - name: Show all folders
+      run: Get-ChildItem -Recurse
+      shell: pwsh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-builds
+        path: |
+          ./wp-backend-rs-emini/jniLibs
+          ./wp-backend-rs-emini/bindings
+        if-no-files-found: error
+
+  build-android:
+    needs: build-rust-backend
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download backend artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-builds
+        path: ./backend-artifacts # Download to a temporary folder
+
+    - name: Integrate Rust libraries and bindings
+      run: |
+        echo "Copying native libraries..."
+        # Create the destination directory if it doesn't exist
+        mkdir -p ./wp-android-emini/app/src/main/jniLibs/
+        # Copy the native libraries
+        cp -r ./backend-artifacts/jniLibs/* ./wp-android-emini/app/src/main/jniLibs/
+        
+        echo "Copying Kotlin bindings..."
+        # Create the destination directory if it doesn't exist
+        mkdir -p ./wp-android-emini/app/src/main/java/uniffi/
+        # Copy the Kotlin bindings
+        cp ./backend-artifacts/bindings/uniffi/* ./wp-android-emini/app/src/main/java/uniffi/
+        
+    - name: set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'oracle'
+        cache: gradle
+
+    - name: Decode Keystore (.p12)
+      run: |
+        echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > ./wp-android-emini/app/release.p12
+        
+    - name: Grant execute permission for gradlew
+      working-directory: ./wp-android-emini
+      run: chmod +x gradlew
+      
+    - name: Build Release APK with Gradle Properties
+      working-directory: ./wp-android-emini
+      run: |
+        TAG_NAME=${{ github.ref_name }}
+        
+        # Calculate a version code from the tag.
+        # Formula: Major * 10000 + Minor * 100 + Patch
+        # Example: 1.2.3  -> 1*10000 + 2*100 + 3 = 10203
+        VERSION_CODE=$(echo $TAG_NAME | awk -F. '{ print ($1 * 10000) + ($2 * 100) + $3 }')
+        
+        echo "Using Version Name: $TAG_NAME"
+        echo "Calculated Version Code: $VERSION_CODE"
+
+        ./gradlew assembleRelease \
+          -PciVersionCode=$VERSION_CODE \
+          -PciVersionName=$TAG_NAME \
+          -Pandroid.injected.signing.store.file=${{ github.workspace }}/app/release.p12 \
+          -Pandroid.injected.signing.store.password='${{ secrets.RELEASE_KEYSTORE_PASSWORD }}' \
+          -Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}' \
+          -Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'
+
+    - name: Rename APKs with Git Tag
+      working-directory: ./wp-android-emini
+      run: |
+        # Explicitly get the tag using Actions context syntax
+        # This is the best practice
+        TAG_NAME="${{ github.ref_name }}"
+        
+        RELEASE_DIR="app/build/outputs/apk/release"
+        
+        for apk_file in $RELEASE_DIR/*.apk; do
+          if [ -f "$apk_file" ]; then
+            base_name=$(basename "$apk_file" .apk)
+            
+            # Construct the new filename using our explicit variable
+            new_name="${base_name}-${TAG_NAME}.apk"
+            
+            echo "Renaming $(basename "$apk_file") to $new_name"
+            mv "$apk_file" "$RELEASE_DIR/$new_name"
+          fi
+        done
+        
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apks
+        path: wp-android-emini/app/build/outputs/apk/release/*.apk
+        if-no-files-found: error
+
+  release:
+    needs: build-android
+    runs-on: ubuntu-latest
+    
+    steps:      
+      - name: Download backend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-builds
+          path: ./backend-${{ github.ref_name }}
+
+      - name: Rezip backend-${{ github.ref_name }}
+        run: zip -r backend-${{ github.ref_name }}.zip backend-${{ github.ref_name }}
+      
+      - name: Download release apks
+        uses: actions/download-artifact@v4
+        with:
+          name: release-apks
+          path: ./release-apks
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-apks/*.apk
+            backend-${{ github.ref_name }}.zip
