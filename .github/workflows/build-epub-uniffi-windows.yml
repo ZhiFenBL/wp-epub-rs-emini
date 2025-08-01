@@ -1,0 +1,69 @@
+name: EPUB [Uniffi] | Rust CI | Desktop
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'wp-backend-rs-emini/epub-uniffi/src/**'
+      - 'wp-backend-rs-emini/epub-uniffi/Cargo.toml'
+      - 'wp-backend-rs-emini/epub-uniffi/.cargo/**'
+      
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'wp-backend-rs-emini/epub-uniffi/src/**'
+      - 'wp-backend-rs-emini/epub-uniffi/Cargo.toml'
+      - 'wp-backend-rs-emini/epub-uniffi/.cargo/**'
+
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: windows-2025
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install build-ndk
+      run: cargo install cargo-ndk
+
+    - name: Install toolchains
+      run: |
+        rustup target add stable-x86_64-pc-windows-msvc
+
+    - name: Build
+      working-directory: ./wp-backend-rs-emini 
+      run: cargo -o ./nativeLibs build --release
+      
+    - name: Generate Kotlin Bindings
+      working-directory: ./wp-backend-rs-emini 
+      run: |
+        cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+
+    - name: Organize Artifacts
+      shell: pwsh
+      run: |
+        $workingDir = "./wp-backend-rs-emini"
+        
+        # Create the directory for the native library
+        New-Item -ItemType Directory -Force -Path "$workingDir/nativeLibs"
+        
+        # Move the compiled DLL to the new directory
+        # The DLL name will match your CRATE_NAME
+        Move-Item -Path "$workingDir/epub-uniffi/target/release/uniffi_wp_epub_mini.dll" -Destination "$workingDir/nativeLibs/"
+        
+    - name: Show all folders
+      run: Get-ChildItem -Recurse
+      shell: pwsh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: epub-uniffi-builds
+        path: |
+          ./wp-backend-rs-emini/nativeLibs
+          ./wp-backend-rs-emini/bindings
+        if-no-files-found: error
