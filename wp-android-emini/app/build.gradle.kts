@@ -11,8 +11,12 @@ android {
         applicationId = "us.wpdl.wprust"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        
+        // Read version code from a gradle property, defaulting to 1 for local builds.
+        versionCode = providers.gradleProperty("ciVersionCode").orNull?.toInt() ?: 1
+        
+        // Read version name from a gradle property, defaulting to "1.0-local" for local builds.
+        versionName = providers.gradleProperty("ciVersionName").orNull ?: "1.0-local"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
