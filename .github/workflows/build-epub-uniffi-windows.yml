@@ -40,6 +40,10 @@ jobs:
       run: |
         cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
 
+    - name: Show all folders
+      run: Get-ChildItem -Recurse
+      shell: pwsh
+      
     - name: Organize Artifacts
       shell: pwsh
       run: |
@@ -50,11 +54,7 @@ jobs:
         
         # Move the compiled DLL to the new directory
         # The DLL name will match your CRATE_NAME
-        Move-Item -Path "$workingDir/epub-uniffi/target/release/uniffi_wp_epub_mini.dll" -Destination "$workingDir/nativeLibs/"
-        
-    - name: Show all folders
-      run: Get-ChildItem -Recurse
-      shell: pwsh
+        Move-Item -Path "$workingDir/epub-uniffi/target/release/libuniffi_wp_epub_mini.dll" -Destination "$workingDir/nativeLibs/"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
