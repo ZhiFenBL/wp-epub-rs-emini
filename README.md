@@ -2,7 +2,7 @@
   <img src="https://github.com/user-attachments/assets/5a033821-6eaf-47c9-a5f8-a6e808881624" alt="WattDownload Logo" width="200px">
 </p>
 
-<h1 align="center">WP (Downloader) | EPUB | Rust | Extra-Mini | Android/JVM</h1>
+<h1 align="center">WP (Downloader) | EPUB | Extra-Mini | Android/JVM</h1>
 
 <p align="center">
   Extra-Minimal Android and JVM apps to Download Stories from WP in EPUB (version 3) format. <br/>
