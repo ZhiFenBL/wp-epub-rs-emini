@@ -11,6 +11,14 @@
 
 ---
 
+<div align="center">
+  <a href="https://github.com/WattDownload/wp-epub-rs-emini/releases/latest">
+    <img src="https://img.shields.io/badge/Download%20For%20Android%20or%20Desktop%20(JVM)%20now!-darkgreen?style=for-the-badge&logo=abdownloadmanager&logoColor=f5f5f5" alt="Download Android App">
+  </a>
+</div>
+
+---
+
 ## What is this?
 - A Blazing fast - Extra-Minimal Android and JVM apps to download any story from WP to epub (version 3) format - even purchased ones.
 
