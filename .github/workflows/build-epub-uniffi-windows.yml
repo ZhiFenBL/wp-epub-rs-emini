@@ -54,7 +54,7 @@ jobs:
         
         # Move the compiled DLL to the new directory
         # The DLL name will match your CRATE_NAME
-        Move-Item -Path "$workingDir/epub-uniffi/target/release/libuniffi_wp_epub_mini.dll" -Destination "$workingDir/nativeLibs/"
+        Move-Item -Path "$workingDir/target/release/uniffi_wp_epub_mini.dll" -Destination "$workingDir/nativeLibs/"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
