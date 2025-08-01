@@ -1,4 +1,4 @@
-name: EPUB [Uniffi] | Rust CI | Desktop
+name: EPUB [Uniffi] | Rust CI | Windows
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
 
     - name: Install toolchains
       run: |
-        rustup target add stable-x86_64-pc-windows-msvc
+        rustup target add x86_64-pc-windows-msvc
 
     - name: Build
       working-directory: ./wp-backend-rs-emini 
