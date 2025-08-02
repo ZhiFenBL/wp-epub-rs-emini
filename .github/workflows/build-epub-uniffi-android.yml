@@ -1,4 +1,4 @@
-name: EPUB [Uniffi] | Rust CI
+name: EPUB [Uniffi] | Rust CI | Android
 
 on:
   push:
