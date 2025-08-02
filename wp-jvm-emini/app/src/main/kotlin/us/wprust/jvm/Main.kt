@@ -27,7 +27,7 @@ import uniffi.wp_epub_mini.downloadWattpadStory
 import us.wprust.jvm.scenes.*
 import us.wprust.jvm.utils.CustomModalDialogs
 import us.wprust.jvm.utils.LafAction
-import us.wprust.jvm.utils.MenuBar
+import us.wprust.jvm.components.menubar.MenuBar
 import us.wprust.jvm.utils.NetworkUtils
 import java.awt.Color
 import java.awt.Component
@@ -222,7 +222,7 @@ class Main internal constructor(detector: OsThemeDetector) : JFrame() {
             }
         })
 
-        jMenuBar = MenuBar.createMenuBar()
+        jMenuBar = MenuBar.createMenuBar(this)
         setSize(616, 540)
         setTitle("Wattpad Downloader")
         setResizable(false)

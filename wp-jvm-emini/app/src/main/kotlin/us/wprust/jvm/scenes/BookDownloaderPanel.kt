@@ -6,7 +6,7 @@ import com.formdev.flatlaf.extras.components.FlatLabel
 import com.formdev.flatlaf.extras.components.FlatPasswordField
 import com.formdev.flatlaf.extras.components.FlatTextField
 import us.wprust.jvm.Main
-import us.wprust.jvm.components.LabeledSwitch
+import us.wprust.jvm.components.menubar.LabeledSwitch
 import java.awt.*
 import javax.swing.Icon
 import javax.swing.JLabel
