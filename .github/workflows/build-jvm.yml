@@ -80,26 +80,21 @@ jobs:
       working-directory: ${{ env.WORKING_DIR }}
       run: cargo build --package wp-epub-mini --release
       
-    # - name: Generate Kotlin Bindings
-    #   working-directory: ${{ env.WORKING_DIR }}
-    #   run: cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
-
     - name: Organize Artifacts
       run: |
-        # Create the directory for the native library
-        mkdir -p "${{ env.WORKING_DIR }}/nativeLibs"
+        # Create a root directory to ensure consistent structure
+        mkdir -p artifact_content/nativeLibs
         
-        # Move the compiled .so file
-        # Note the 'lib' prefix and '.so' extension for Linux
-        mv "${{ env.WORKING_DIR }}/target/release/libuniffi_wp_epub_mini.so" "${{ env.WORKING_DIR }}/nativeLibs/"
-
+        # Move the compiled library into the nested structure
+        # (This line will be slightly different for .so vs .dylib)
+        mv "${{ env.WORKING_DIR }}/target/release/libuniffi_wp_epub_mini.so" artifact_content/nativeLibs/
+        
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: epub-uniffi-builds-linux-x86_64
         path: |
-          ${{ env.WORKING_DIR }}/nativeLibs
-         # ${{ env.WORKING_DIR }}/bindings
+          artifact_content/
         if-no-files-found: error
 
   # --- New Job for macOS (Apple Silicon) ---
@@ -117,26 +112,20 @@ jobs:
       working-directory: ${{ env.WORKING_DIR }}
       run: cargo build --package wp-epub-mini --release
       
-    # - name: Generate Kotlin Bindings
-    #   working-directory: ${{ env.WORKING_DIR }}
-    #   run: cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
-
     - name: Organize Artifacts
       run: |
-        # Create the directory for the native library
-        mkdir -p "${{ env.WORKING_DIR }}/nativeLibs"
+        # Create a root directory to ensure consistent structure
+        mkdir -p artifact_content/nativeLibs
         
-        # Move the compiled .dylib file
-        # Note the 'lib' prefix and '.dylib' extension for macOS
-        mv "${{ env.WORKING_DIR }}/target/release/libuniffi_wp_epub_mini.dylib" "${{ env.WORKING_DIR }}/nativeLibs/"
+        # Move the compiled .dylib file into the nested structure
+        mv "${{ env.WORKING_DIR }}/target/release/libuniffi_wp_epub_mini.dylib" artifact_content/nativeLibs/
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: epub-uniffi-builds-macos-aarch64
         path: |
-          ${{ env.WORKING_DIR }}/nativeLibs
-          # ${{ env.WORKING_DIR }}/bindings
+          artifact_content/
         if-no-files-found: error
 
   swing-build:
