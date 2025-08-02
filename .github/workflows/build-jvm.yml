@@ -1,4 +1,4 @@
-name: EPUB [Uniffi] | Kotlin-Rust CI | JVM
+name: JVM CI
 
 on:
   push:
