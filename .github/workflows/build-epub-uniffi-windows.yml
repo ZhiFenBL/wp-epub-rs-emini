@@ -1,4 +1,71 @@
-name: EPUB [Uniffi] | Rust CI | Windows
+# name: EPUB [Uniffi] | Rust CI | Desktop
+
+# on:
+#   push:
+#     branches: [ "main" ]
+#     paths:
+#       - 'wp-backend-rs-emini/epub-uniffi/src/**'
+#       - 'wp-backend-rs-emini/epub-uniffi/Cargo.toml'
+#       - 'wp-backend-rs-emini/epub-uniffi/.cargo/**'
+      
+#   pull_request:
+#     branches: [ "main" ]
+#     paths:
+#       - 'wp-backend-rs-emini/epub-uniffi/src/**'
+#       - 'wp-backend-rs-emini/epub-uniffi/Cargo.toml'
+#       - 'wp-backend-rs-emini/epub-uniffi/.cargo/**'
+
+#   workflow_dispatch:
+
+# env:
+#   CARGO_TERM_COLOR: always
+
+# jobs:
+#   build-windows:
+#     runs-on: windows-2025
+
+#     steps:
+#     - uses: actions/checkout@v4
+
+#     - name: Install toolchains
+#       run: |
+#         rustup target add x86_64-pc-windows-msvc
+
+#     - name: Build
+#       working-directory: ./wp-backend-rs-emini 
+#       run: cargo build --package wp-epub-mini --release
+      
+#     - name: Generate Kotlin Bindings
+#       working-directory: ./wp-backend-rs-emini 
+#       run: |
+#         cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+
+#     - name: Show all folders
+#       run: Get-ChildItem -Recurse
+#       shell: pwsh
+      
+#     - name: Organize Artifacts
+#       shell: pwsh
+#       run: |
+#         $workingDir = "./wp-backend-rs-emini"
+        
+#         # Create the directory for the native library
+#         New-Item -ItemType Directory -Force -Path "$workingDir/nativeLibs"
+        
+#         # Move the compiled DLL to the new directory
+#         # The DLL name will match your CRATE_NAME
+#         Move-Item -Path "$workingDir/target/release/uniffi_wp_epub_mini.dll" -Destination "$workingDir/nativeLibs/"
+
+#     - name: Upload artifact
+#       uses: actions/upload-artifact@v4
+#       with:
+#         name: epub-uniffi-builds-windows
+#         path: |
+#           ./wp-backend-rs-emini/nativeLibs
+#           ./wp-backend-rs-emini/bindings
+#         if-no-files-found: error
+
+name: EPUB [Uniffi] | Rust CI | Desktop
 
 on:
   push:
@@ -19,48 +86,119 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # Define the working directory as an environment variable for easier reuse
+  WORKING_DIR: ./wp-backend-rs-emini
 
 jobs:
-  build:
+  # Your existing Windows job, slightly modified for consistency
+  build-windows:
     runs-on: windows-2025
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install toolchains
-      run: |
-        rustup target add x86_64-pc-windows-msvc
+    - name: Install toolchain
+      run: rustup target add x86_64-pc-windows-msvc
 
     - name: Build
-      working-directory: ./wp-backend-rs-emini 
+      working-directory: ${{ env.WORKING_DIR }}
       run: cargo build --package wp-epub-mini --release
       
     - name: Generate Kotlin Bindings
-      working-directory: ./wp-backend-rs-emini 
-      run: |
-        cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
 
-    - name: Show all folders
-      run: Get-ChildItem -Recurse
-      shell: pwsh
-      
     - name: Organize Artifacts
       shell: pwsh
       run: |
-        $workingDir = "./wp-backend-rs-emini"
-        
         # Create the directory for the native library
-        New-Item -ItemType Directory -Force -Path "$workingDir/nativeLibs"
+        New-Item -ItemType Directory -Force -Path "${{ env.WORKING_DIR }}/nativeLibs"
         
         # Move the compiled DLL to the new directory
-        # The DLL name will match your CRATE_NAME
-        Move-Item -Path "$workingDir/target/release/uniffi_wp_epub_mini.dll" -Destination "$workingDir/nativeLibs/"
+        # The crate name from Cargo.toml is 'uniffi_wp_epub_mini'
+        Move-Item -Path "${{ env.WORKING_DIR }}/target/release/uniffi_wp_epub_mini.dll" -Destination "${{ env.WORKING_DIR }}/nativeLibs/"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: epub-uniffi-builds
+        name: epub-uniffi-builds-windows-x86_64
         path: |
-          ./wp-backend-rs-emini/nativeLibs
-          ./wp-backend-rs-emini/bindings
+          ${{ env.WORKING_DIR }}/nativeLibs
+          ${{ env.WORKING_DIR }}/bindings
+        if-no-files-found: error
+
+  # --- New Job for Linux ---
+  build-linux:
+    runs-on: ubuntu-latest # Use a standard Ubuntu runner for x86_64 Linux
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential
+
+    - name: Install toolchain
+      run: rustup target add x86_64-unknown-linux-gnu
+
+    - name: Build
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo build --package wp-epub-mini --release
+      
+    - name: Generate Kotlin Bindings
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+
+    - name: Organize Artifacts
+      run: |
+        # Create the directory for the native library
+        mkdir -p "${{ env.WORKING_DIR }}/nativeLibs"
+        
+        # Move the compiled .so file
+        # Note the 'lib' prefix and '.so' extension for Linux
+        mv "${{ env.WORKING_DIR }}/target/release/libuniffi_wp_epub_mini.so" "${{ env.WORKING_DIR }}/nativeLibs/"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: epub-uniffi-builds-linux-x86_64
+        path: |
+          ${{ env.WORKING_DIR }}/nativeLibs
+          ${{ env.WORKING_DIR }}/bindings
+        if-no-files-found: error
+
+  # --- New Job for macOS (Apple Silicon) ---
+  build-macos-aarch64:
+    # NOTE: Use macos-15 for native Apple Silicon builds. This is crucial.
+    runs-on: macos-15
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install toolchain
+      run: rustup target add aarch64-apple-darwin
+
+    - name: Build
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo build --package wp-epub-mini --release
+      
+    - name: Generate Kotlin Bindings
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+
+    - name: Organize Artifacts
+      run: |
+        # Create the directory for the native library
+        mkdir -p "${{ env.WORKING_DIR }}/nativeLibs"
+        
+        # Move the compiled .dylib file
+        # Note the 'lib' prefix and '.dylib' extension for macOS
+        mv "${{ env.WORKING_DIR }}/target/release/libuniffi_wp_epub_mini.dylib" "${{ env.WORKING_DIR }}/nativeLibs/"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: epub-uniffi-builds-macos-aarch64
+        path: |
+          ${{ env.WORKING_DIR }}/nativeLibs
+          ${{ env.WORKING_DIR }}/bindings
         if-no-files-found: error
