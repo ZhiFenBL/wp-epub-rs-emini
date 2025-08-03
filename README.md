@@ -6,7 +6,7 @@
 
 <p align="center">
   Extra-Minimal Android and JVM apps to Download Stories from WP in EPUB (version 3) format. <br/>
-  Uses <a href="/wp-api-rs-emini">wp-api-rs-emini</a> to download and <a href="/wp-epub-rs-emini-uniffi">wp-epub-rs-emini-uniffi</a> to generate apubs.
+  Uses <a href="/wp-backend-rs-emini/wattpad-rs">wp-api-rs-emini</a> to download and <a href="/wp-backend-rs-emini/wp-epub-mini">wp-epub-mini</a> to generate apubs.
 </p>
 
 ---
