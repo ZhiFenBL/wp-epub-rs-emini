@@ -5,7 +5,6 @@ import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatLabel
 import us.wprust.jvm.Main.Companion.sliderPanel
-import java.awt.Dimension
 import javax.swing.ImageIcon
 import javax.swing.JPanel
 import javax.swing.SwingConstants

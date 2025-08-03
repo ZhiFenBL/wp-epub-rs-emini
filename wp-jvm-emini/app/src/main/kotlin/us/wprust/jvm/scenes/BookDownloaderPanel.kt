@@ -30,6 +30,8 @@ class BookDownloaderPanel : JPanel() {
     // Public callback for the download event
     lateinit var onDownload: (username: String?, password: String?) -> Unit
 
+    var onRestart: (() -> Unit)? = null
+
     init {
         // Use the base panel configuration from Main
         val basePanel = Main.sliderPanel
@@ -139,9 +141,15 @@ class BookDownloaderPanel : JPanel() {
         }
         add(authorNameLabel)
 
+        val backButton = FlatButton().apply {
+            text = "Back"
+            setBounds(100, 50 + 200 + 10 + 25 + 20 + 40, 95, 30)
+        }
+        add(backButton)
+
         downloadButton = FlatButton().apply {
             text = "Download"
-            setBounds(100, 50 + 200 + 10 + 25 + 20 + 40, 580 - 200, 30)
+            setBounds(75 + 20 + 100 + 10, 50 + 200 + 10 + 25 + 20 + 40, 580 - 200 - 75 - 20 - 10, 30)
         }
         add(downloadButton)
 
@@ -168,6 +176,10 @@ class BookDownloaderPanel : JPanel() {
                 val pass = if (isLoginSwitch.isSelected) String(passwordField.password) else null
                 onDownload(user, pass)
             }
+        }
+
+        backButton.addActionListener {
+            onRestart?.invoke()
         }
     }
 

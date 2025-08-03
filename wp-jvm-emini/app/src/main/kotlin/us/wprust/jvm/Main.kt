@@ -24,10 +24,10 @@ import raven.modal.option.Option
 import raven.modal.toast.option.ToastOption
 import raven.modal.toast.option.ToastStyle
 import uniffi.wp_epub_mini.downloadWattpadStory
+import us.wprust.jvm.components.menubar.MenuBar
 import us.wprust.jvm.scenes.*
 import us.wprust.jvm.utils.CustomModalDialogs
 import us.wprust.jvm.utils.LafAction
-import us.wprust.jvm.components.menubar.MenuBar
 import us.wprust.jvm.utils.NetworkUtils
 import java.awt.Color
 import java.awt.Component
@@ -110,6 +110,14 @@ class Main internal constructor(detector: OsThemeDetector) : JFrame() {
             }
         }
 
+        // Setup callback to back in BookDownloaderPanel
+        bookDownloaderPanel.onRestart = {
+            //Itz bad doing here but
+            checkoutPanel.rest()
+
+            slidePane.addSlide(checkoutPanel, SlidePaneTransition.Type.BACK)
+        }
+
         // --- ADDED: Set up callbacks for the result panel ---
         downloadResultPanel.onRestart = {
 
@@ -119,6 +127,7 @@ class Main internal constructor(detector: OsThemeDetector) : JFrame() {
             cleanupTempFile() // Clean up before going back
             slidePane.addSlide(checkoutPanel, SlidePaneTransition.Type.BACK)
         }
+
         downloadResultPanel.onSave = {
             promptToSaveFile()
         }
@@ -144,8 +153,8 @@ class Main internal constructor(detector: OsThemeDetector) : JFrame() {
                         "Story ID" -> {
                             try {
                                 val storyID = storyInput.toInt()
-                                val selectedTransition = SlidePaneTransition.Type.FORWARD
-                                slidePane.addSlide(checkingStoryPanel, selectedTransition)
+
+                                slidePane.addSlide(checkingStoryPanel, SlidePaneTransition.Type.FORWARD)
 
                                 doProcess(storyID)
 
@@ -158,6 +167,16 @@ class Main internal constructor(detector: OsThemeDetector) : JFrame() {
 
                         "Story Link" -> {
                             try {
+                                val storyLink = storyInput.trim()
+
+                                val storyID = getStoryIdFromUrl(storyLink)
+
+                                slidePane.addSlide(checkingStoryPanel, SlidePaneTransition.Type.FORWARD)
+
+                                doProcess(storyID)
+
+                            } catch (e: IllegalArgumentException) {
+                                showNotAValidStoryLinkExceptionDialog(this)
                             } catch (e: Exception) {
                                 showUnexpectedExceptionDialog(this, e.message)
                             }
@@ -232,6 +251,30 @@ class Main internal constructor(detector: OsThemeDetector) : JFrame() {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE)
     }
 
+    /**
+     * Checks if the input is a valid Wattpad story link and extracts the story ID.
+     *
+     * @param url The input string, which must be a URL containing "/story/".
+     * @return The story ID as a non-null Int.
+     * @throws IllegalArgumentException if the input is not a valid link or the ID is invalid.
+     */
+    fun getStoryIdFromUrl(url: String?): Int {
+        val trimmedUrl = url?.trim()
+
+        if (trimmedUrl.isNullOrBlank()) {
+            throw IllegalArgumentException("URL cannot be null or empty.")
+        }
+
+        val storyUrlPattern = Regex("""/story/(\d+)""")
+
+        // Chain of operations: find -> get string ID -> convert to Int
+        return storyUrlPattern.find(trimmedUrl)
+            ?.groupValues?.getOrNull(1) // Gets the ID as a String, e.g., "123456789"
+            ?.toIntOrNull()             // Safely converts the String to an Int?
+            ?: throw IllegalArgumentException("Input is not a valid Wattpad story link or contains an invalid ID.")
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // --- ADDED HELPER FUNCTIONS ---
     private fun formatElapsedTime(millis: Long): String {
@@ -258,7 +301,12 @@ class Main internal constructor(detector: OsThemeDetector) : JFrame() {
 
     private fun promptToSaveFile() {
         if (tempEpubFile == null || !tempEpubFile!!.exists()) {
-            Toast.show(this, Toast.Type.WARNING, "Temporary file not found. Please try the download again.", toastOption)
+            Toast.show(
+                this,
+                Toast.Type.WARNING,
+                "Temporary file not found. Please try the download again.",
+                toastOption
+            )
             return
         }
 
@@ -574,6 +622,17 @@ class Main internal constructor(detector: OsThemeDetector) : JFrame() {
         )
     }
 
+    private fun showNotAValidStoryLinkExceptionDialog(owner: Component?) {
+        ModalDialog.showModal(
+            owner, CustomModalDialogs(
+                CustomModalDialogs.Type.ERROR,
+                "Your input is not a valid wattpad story link despite selected type!",
+                "Not a valid story link!",
+                SimpleModalBorder.Option("Ah, I'm mistaken", 0),
+                null
+            ), modelOption
+        )
+    }
 
     companion object {
 
