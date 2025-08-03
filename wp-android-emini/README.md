@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5a033821-6eaf-47c9-a5f8-a6e808881624" alt="WattDownload Logo" width="200px">
+  <img src="../logo.png" alt="WattDownload Logo" width="200px">
 </p>
 
 <h1 align="center">WP (Downloader) | EPUB | Rust | Extra-Mini | Android</h1>
 
 <p align="center">
   Extra-Minimal Android to Download Stories from WP in EPUB (version 3) format. <br/>
-  Uses <a href="https://github.com/WattDownload/wp-api-rs-emini">wp-api-rs-emini</a> to download and <a href="https://github.com/WattDownload/wp-epub-rs-emini-uniffi">wp-epub-rs-emini-uniffi</a> to generate apubs.
+  Uses <a href="../wp-backend-rs-emini/wattpad-rs/">wattpad-rs</a> to download and <a href="../wp-backend-rs-emini/wp-epub-mini">wp-epub-mini</a> to generate apubs.
 </p>
 
 ---
@@ -21,7 +21,6 @@
 ## Features
 - Download any story under a minute.
 - Download purchaed content (Premium chapter) - with WP credentials.
-- Save cookies for future use, remove cookies, re-authorize, set if use your account to download, etc.
 - Download stories with or without images embedded.
 - Clean, Extra-Minimal UI.
 
