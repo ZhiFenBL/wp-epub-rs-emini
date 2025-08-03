@@ -20,7 +20,7 @@
 ## Features
 
 ## Get started
-- Just reach [wp-epub-rs-emini-uniffi](https://github.com/WattDownload/wp-epub-rs-emini-uniffi) repo and figure our yourself - at least for now.
+- Just reach [wp-epub-mini](../wp-epub-mini) repo and figure our yourself - at least for now.
 
 ## Acknowledgements
 - [AaronBenDaniel](https://github.com/AaronBenDaniel) for maintaining [API Documentation](https://github.com/Archive-WP/WattpadAPIDocumentation/), and always helping with strict-robust testing, giving ideas, debugging, and inspiring..
