@@ -4,18 +4,18 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'wp-backend-rs-emini/wp-jvm-emini/app/**'
-      - 'wp-backend-rs-emini/wp-jvm-emini/settings.gradle.kts'
-      - 'wp-backend-rs-emini/wp-jvm-emini/gradle.properties'
-      - 'wp-backend-rs-emini/wp-jvm-emini/gradle/**'
+      - 'wp-jvm-emini/app/**'
+      - 'wp-jvm-emini/settings.gradle.kts'
+      - 'wp-jvm-emini/gradle.properties'
+      - 'wp-jvm-emini/gradle/**'
       
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'wp-backend-rs-emini/wp-jvm-emini/app/**'
-      - 'wp-backend-rs-emini/wp-jvm-emini/settings.gradle.kts'
-      - 'wp-backend-rs-emini/wp-jvm-emini/gradle.properties'
-      - 'wp-backend-rs-emini/wp-jvm-emini/gradle/**'
+      - 'wp-jvm-emini/app/**'
+      - 'wp-jvm-emini/settings.gradle.kts'
+      - 'wp-jvm-emini/gradle.properties'
+      - 'wp-jvm-emini/gradle/**'
 
   workflow_dispatch:
 
