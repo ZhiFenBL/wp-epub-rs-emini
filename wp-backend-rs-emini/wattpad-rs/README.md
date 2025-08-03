@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5a033821-6eaf-47c9-a5f8-a6e808881624" alt="WattDownload Logo" width="200px">
+  <img src="../../logo.png" alt="WattDownload Logo" width="200px">
 </p>
 
 <h1 align="center">WP (API) | Rust | Extra-Mini</h1>
