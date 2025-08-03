@@ -24,6 +24,9 @@
 - Download stories with or without images embedded.
 - Clean, Extra-Minimal UI.
 
+## Showcase
+https://github.com/user-attachments/assets/6e82db83-1bde-4295-b27a-f8cc989df8d6
+
 ## Get started (Dev)
 - Just reach refer source and figure our yourself - at least for now.
 
