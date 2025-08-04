@@ -156,15 +156,26 @@ class DownloadActivity : AppCompatActivity() {
                     outputPath = tempFilePath // <-- Pass the path here
                 )
 
+                // The download is finished. Now stop the timer.
+                val durationMillis = System.currentTimeMillis() - downloadStartTime
+                val formattedTime = formatElapsedTime(durationMillis)
+
                 // 3. Store the URI of the successfully created temp file
                 tempEpubUri = Uri.fromFile(File(result.outputPath))
 
                 // 4. Switch to the main thread to prompt the user
+                // Switch to the main thread to update UI and prompt the user
                 withContext(Dispatchers.Main) {
+                    timerJob?.cancel() // Stop the timer
+                    binding.timerTextView.text = formattedTime // Set the final time
+
+                    // Update the status text to show completion time
+                    binding.statusTextView.text = "Download complete in $formattedTime. Please choose a save location."
+
+                    // Now prompt to save
                     val defaultFileName = sanitizeFilename(result.title) + ".epub"
                     promptUserToSaveFile(defaultFileName)
                 }
-
             } catch (e: uniffi.wp_epub_mini.EpubException.Authentication) {
                 println("❌ Login failed!")
                 println("   └── Reason: ${e.reason}")
@@ -269,14 +280,13 @@ class DownloadActivity : AppCompatActivity() {
     }
 
     private fun showSuccess(message: String) {
-        timerJob?.cancel()
-
-        val durationMillis = System.currentTimeMillis() - downloadStartTime
-        val successMessage = "$message\nCompleted in ${formatElapsedTime(durationMillis)}."
-
-        setResult(RESULT_OK) // Signal success back to MainActivity
+        // The timer is already stopped. We just update the final state.
+        setResult(RESULT_OK)
         binding.progressIndicator.visibility = View.GONE
-        binding.statusTextView.text = successMessage
+
+        // Use the message passed from copyFile
+        binding.statusTextView.text = message
+
         binding.finishButton.visibility = View.VISIBLE
     }
 
