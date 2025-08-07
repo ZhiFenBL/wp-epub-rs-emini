@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exe4j version="10.0" transformSequenceNumber="3">
+  <directoryPresets config="." />
+  <application name="WattDownload" distributionSourceDir="./" />
+  <executable name="WattDownload" wrapperType="embed" iconSet="true" iconFile="logo.ico" executableDir="." executableMode="gui" dpiAware="true">
+    <messageSet>
+      <message id="NoJvmFound" text="No JVM could be found on your system.&#xA;Please define WATTDOWNLOAD_JRE or WATTDOWNLOAD_JDK&#xA;to point to an installed GraalVM 24 JDK or download from https://graalvm.org" />
+      <message id="JvmInPath" text="The JVM found in your path is damaged.&#xA;Please reinstall or define WATTDOWNLOAD_JRE or WATTDOWNLOAD_JDK&#xA;to point to an installed GraalVM 24 JDK." />
+      <message id="JvmEnvVar" text="The {0} environment variable does not&#xA;point to a working GraalVM 24 JDK." />
+      <message id="JvmDefinedPath" text="The JVM found at {0} is damaged.&#xA;Please reinstall or define WATTDOWNLOAD_JRE or WATTDOWNLOAD_JDK&#xA;to point to an installed GraalVM 24 JDK." />
+      <message id="NoJvmFound3264" text="No JVM could be found on your system.&#xA;Please define WATTDOWNLOAD_JRE or WATTDOWNLOAD_JDK&#xA;to point to an installed {0}-bit GraalVM 24 JDK or download from https://graalvm.org" />
+      <message id="JvmInPath3264" text="The JVM found in your path is damaged.&#xA;Please reinstall or define WATTDOWNLOAD_JRE or WATTDOWNLOAD_JDK&#xA;to point to an installed {0}-bit GraalVM 24 JDK." />
+      <message id="JvmDefinedPath32" text="The JVM found at {0} is damaged.&#xA;Please reinstall or define WATTDOWNLOAD_JRE or WATTDOWNLOAD_JDK&#xA;to point to an installed 32-bit GraalVM 24 JDK." />
+      <message id="JvmDefinedPath64" text="The JVM found at {0} is damaged.&#xA;Please reinstall or define WATTDOWNLOAD_JRE or WATTDOWNLOAD_JDK&#xA;to point to an installed 64-bit GraalVM 24 JDK." />
+    </messageSet>
+    <versionInfo include="true" fileVersion="0.1.3" fileDescription="WattDownloader Windows Executable" legalCopyright="WattDownload" internalName="v0.1.3" companyName="WattDownload" productVersion="0.1.3" />
+  </executable>
+  <splashScreen bitmapFile="C:/Users/owner/Downloads/logo.png" />
+  <java mainClass="us.wprust.jvm.Main" vmParameters="--enable-native-access=ALL-UNNAMED" preferredVM="server" minVersion="24" maxVersion="24">
+    <searchSequence>
+      <directory location="./jre" />
+      <envVar name="WATTDOWNLOAD_JRE" />
+      <envVar name="WATTDOWNLOAD_JDK" />
+    </searchSequence>
+    <classPath>
+      <archive location="WattDownload.jar" />
+    </classPath>
+  </java>
+</exe4j>
