@@ -1,0 +1,226 @@
+name: JVM CI
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  # Define the working directory as an environment variable for easier reuse
+  WORKING_DIR: ./wp-backend-rs-emini
+  JVM_WORKING_DIR: ./wp-jvm-emini
+
+jobs:
+  # Your existing Windows job, slightly modified for consistency
+  rust-build-windows:
+    runs-on: windows-2025
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install toolchain
+      run: rustup target add x86_64-pc-windows-msvc
+
+    - name: Build
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo build --package wp-epub-mini --release
+      
+    - name: Generate Kotlin Bindings
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo run --bin uniffi-bindgen generate wp-epub-mini/src/wp_epub_mini.udl --language kotlin --out-dir ./bindings/
+
+    - name: Organize Artifacts
+      shell: pwsh
+      run: |
+        # Create the directory for the native library
+        New-Item -ItemType Directory -Force -Path "${{ env.WORKING_DIR }}/nativeLibs"
+        
+        # Move the compiled DLL to the new directory
+        # The crate name from Cargo.toml is 'uniffi_wp_epub_mini'
+        Move-Item -Path "${{ env.WORKING_DIR }}/target/release/uniffi_wp_epub_mini.dll" -Destination "${{ env.WORKING_DIR }}/nativeLibs/"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: epub-uniffi-builds-windows-x86_64
+        path: |
+          ${{ env.WORKING_DIR }}/nativeLibs
+          ${{ env.WORKING_DIR }}/bindings
+        if-no-files-found: error
+
+  # --- New Job for Linux ---
+  rust-build-linux:
+    runs-on: ubuntu-latest # Use a standard Ubuntu runner for x86_64 Linux
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential
+
+    - name: Install toolchain
+      run: rustup target add x86_64-unknown-linux-gnu
+
+    - name: Build
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo build --package wp-epub-mini --release
+      
+    - name: Organize Artifacts
+      run: |
+        # Create a root directory to ensure consistent structure
+        mkdir -p artifact_content/nativeLibs
+        
+        # Move the compiled library into the nested structure
+        # (This line will be slightly different for .so vs .dylib)
+        mv "${{ env.WORKING_DIR }}/target/release/libuniffi_wp_epub_mini.so" artifact_content/nativeLibs/
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: epub-uniffi-builds-linux-x86_64
+        path: |
+          artifact_content/
+        if-no-files-found: error
+
+  # --- New Job for macOS (Apple Silicon) ---
+  rust-build-macos-aarch64:
+    # NOTE: Use macos-15 for native Apple Silicon builds. This is crucial.
+    runs-on: macos-15
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install toolchain
+      run: rustup target add aarch64-apple-darwin
+
+    - name: Build
+      working-directory: ${{ env.WORKING_DIR }}
+      run: cargo build --package wp-epub-mini --release
+      
+    - name: Organize Artifacts
+      run: |
+        # Create a root directory to ensure consistent structure
+        mkdir -p artifact_content/nativeLibs
+        
+        # Move the compiled .dylib file into the nested structure
+        mv "${{ env.WORKING_DIR }}/target/release/libuniffi_wp_epub_mini.dylib" artifact_content/nativeLibs/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: epub-uniffi-builds-macos-aarch64
+        path: |
+          artifact_content/
+        if-no-files-found: error
+
+  swing-build:
+    needs: 
+      - rust-build-windows
+      - rust-build-linux
+      - rust-build-macos-aarch64
+      
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        
+      - name: Download backend artifacts      
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.JVM_WORKING_DIR }}/native-backends/
+
+      - name: Copy native libraries to resources
+        run: |
+          # Define source and destination paths for clarity
+          SOURCE_PATH="${{ env.JVM_WORKING_DIR }}/native-backends"
+          DEST_PATH="${{ env.JVM_WORKING_DIR }}/app/src/main/resources"
+          
+          # Ensure the destination directory exists
+          mkdir -p "$DEST_PATH"
+          
+          # Copy the library file from each artifact's nativeLibs folder
+          cp -r "$SOURCE_PATH"/*/nativeLibs/* "$DEST_PATH"/
+    
+          # Optional: Verify the files were copied
+          echo "Copied files:"
+          ls -l "$DEST_PATH"
+
+      - name: Integrate bindings
+        run: |
+          # Define source and destination paths for clarity
+          SOURCE_PATH="${{ env.JVM_WORKING_DIR }}/native-backends"
+          DEST_PATH="${{ env.JVM_WORKING_DIR }}/app/src/main/kotlin"
+
+          # The bindings are inside the Windows artifact directory
+          WINDOWS_ARTIFACT_PATH="$SOURCE_PATH/epub-uniffi-builds-windows-x86_64"
+
+          # Ensure the destination directory exists
+          mkdir -p "$DEST_PATH"
+    
+          # Copy the entire 'uniffi' folder to preserve the package structure
+          cp -r "$WINDOWS_ARTIFACT_PATH"/bindings/uniffi "$DEST_PATH"/
+
+          # Optional: Verify the files were copied
+          echo "Copied files:"
+          ls -R "$DEST_PATH/uniffi"
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '24'      # See 'Options' for more details
+          distribution: 'graalvm' # See 'Supported distributions' for available options
+
+      - name: Grant execute permission for gradlew
+        working-directory: ${{ env.JVM_WORKING_DIR }}
+        run: chmod +x gradlew
+      
+      - name: Build Jars (Platform Specific)
+        working-directory: ${{ env.JVM_WORKING_DIR }}
+        run: ./gradlew jarAll
+
+      - name: Rename Jars for Release
+        # This step renames the JARs to the format: os-arch-wprust-version.jar
+        working-directory: ${{ env.JVM_WORKING_DIR }} # CORRECTED working directory
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          RELEASE_DIR="app/build/libs"
+          
+          # Check if the directory exists before proceeding
+          if [ ! -d "$RELEASE_DIR" ]; then
+            echo "Error: Release directory $RELEASE_DIR not found. Did './gradlew jarAll' run successfully?"
+            exit 1
+          fi
+          
+          echo "Renaming JARs in $RELEASE_DIR to format: os-arch-wprust-version.jar"
+          
+          # Assuming 'jarAll' produces files like 'app-windows-x86_64.jar', 'app-linux-x86_64.jar', etc.
+          for original_file in $RELEASE_DIR/app-*.jar; do
+            if [ -f "$original_file" ]; then
+              # Extract the base name without path and extension (e.g., app-windows-x86_64)
+              base_name=$(basename "$original_file" .jar)
+              
+              # Extract the platform part by removing the "app-" prefix (e.g., windows-x86_64)
+              platform_part=${base_name#app-}
+              
+              # Construct the new filename based on your desired format
+              new_name="${platform_part}-wprust-${TAG_NAME}.jar"
+              
+              echo "Renaming $(basename "$original_file") to $new_name"
+              mv "$original_file" "$RELEASE_DIR/$new_name"
+            else
+              echo "Warning: No matching JARs found with pattern 'app-*.jar'. Nothing to rename."
+              # Depending on your needs, you might want to fail the build here instead
+              # exit 1
+            fi
+          done
+          
+      - name: Upload Built Jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp-jvm-emini-release-jars
+          # This path uses a wildcard to grab all renamed JARs
+          path: ${{ env.JVM_WORKING_DIR }}/app/build/libs/*-wprust-*.jar
+          if-no-files-found: error
