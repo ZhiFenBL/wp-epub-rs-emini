@@ -281,12 +281,12 @@ jobs:
         working-directory: ${{ env.JVM_WORKING_DIR }}
         run: |
           # The command is now relative to the working directory
-          .\exe4j\exe4j9\bin\exe4jc.exe --license="${{ secrets.EXE4J_LICENSE }}" --require-license
+          .\exe4j\exe4j10\bin\exe4jc.exe --license="${{ secrets.EXE4J_LICENSE }}" --require-license
 
       - name: Create EXE using exe4j
         working-directory: ${{ env.JVM_WORKING_DIR }}
         run: |
-          .\exe4j\exe4j9\bin\exe4jc.exe ".\exe4j\config.exe4j"
+          .\exe4j\exe4j10\bin\exe4jc.exe ".\exe4j\config.exe4j"
 
       - name: Verify exe4j Directory
         run: |
