@@ -256,22 +256,24 @@ jobs:
           path: ${{ env.JVM_WORKING_DIR }}/exe4j
 
       - name: Rename Windows Jar File
+        working-directory: ${{ env.JVM_WORKING_DIR }}
         shell: pwsh
         run: |
-          # Define the path to the directory containing the JAR
-          $jarDirectory = "${{ env.JVM_WORKING_DIR }}/exe4j/windows-jar"
+          # <<< FIX: The path is now relative to the working directory.
+          # The download-artifact action creates a folder named after the artifact ('windows-jar')
+          $jarDirectory = "./exe4j/windows-jar"
           
           # Find the first file ending with .jar in that directory
           $original_file = Get-ChildItem -Path $jarDirectory -Filter "*.jar" | Select-Object -First 1
           
-          # Check if a file was actually found
           if ($original_file) {
-            $new_name = "WattDownload.jar"
-            echo "Renaming '$($original_file.Name)' to '$new_name'"
-            Rename-Item -Path $original_file.FullName -NewName $new_name
+            # <<< FIX: The destination for the renamed file is now also corrected.
+            $new_path = Join-Path -Path $jarDirectory -ChildPath "WattDownload.jar"
+            echo "Renaming '$($original_file.Name)' to 'WattDownload.jar' inside '$jarDirectory'"
+            Rename-Item -Path $original_file.FullName -NewName $new_path
           } else {
-            echo "Warning: No matching JAR file found in '$jarDirectory'. Nothing to rename."
-            # exit 1 # Uncomment to fail the build if no JAR is found
+            echo "Error: No matching JAR file found in '$jarDirectory'. Nothing to rename."
+            exit 1
           }
   
       - name: Download and Extract exe4j
@@ -286,6 +288,21 @@ jobs:
         run: |
           # The command is now relative to the working directory
           .\exe4j\exe4j10\bin\exe4jc.exe --license="${{ secrets.EXE4J_LICENSE }}" --require-license
+
+      # <<< NEW STEP: This step updates the config file before building the EXE
+      - name: Update exe4j Config with Version
+        working-directory: ${{ env.JVM_WORKING_DIR }}
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $filePath = "./exe4j/config.exe4j"
+
+          Write-Host "Updating '$filePath' with version tag '$tag'..."
+
+          # Read the file, replace the placeholder, and write it back
+          (Get-Content -Path $filePath -Raw) -replace 'VERSION_PLACEHOLDER', $tag | Set-Content -Path $filePath
+
+          Write-Host "Config file updated successfully."
 
       - name: Create EXE using exe4j
         working-directory: ${{ env.JVM_WORKING_DIR }}
