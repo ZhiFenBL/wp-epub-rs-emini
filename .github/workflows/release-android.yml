@@ -103,7 +103,8 @@ jobs:
        
         echo "Using Version Name: $TAG_NAME"
         echo "Calculated Version Code: $VERSION_CODE"
-
+        
+        # 1. Build the split APKs first
         echo "Building SPLIT APKs..."
         ./gradlew assembleRelease \
           -PciVersionCode=$VERSION_CODE \
@@ -113,6 +114,13 @@ jobs:
           -Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}' \
           -Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'
 
+        # 2. Create a temporary directory and move the split APKs to safety
+        TEMP_APK_DIR="../../apk_temp"
+        mkdir -p "$TEMP_APK_DIR"
+        echo "Moving split APKs to temporary storage..."
+        mv app/build/outputs/apk/release/*.apk "$TEMP_APK_DIR/"
+
+        # 3. Build the universal APK. This will clean the output directory.
         echo "Building UNIVERSAL APK..."
         ./gradlew assembleRelease -PbuildUniversalApk=true \
           -PciVersionCode=$VERSION_CODE \
@@ -121,6 +129,13 @@ jobs:
           -Pandroid.injected.signing.store.password='${{ secrets.RELEASE_KEYSTORE_PASSWORD }}' \
           -Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}' \
           -Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'
+
+        # 4. Move the split APKs back into the release directory
+        echo "Restoring split APKs..."
+        mv "$TEMP_APK_DIR"/*.apk app/build/outputs/apk/release/
+        
+        # 5. Clean up the temporary directory
+        rm -rf "$TEMP_APK_DIR"
 
     - name: Rename APKs for Release
       working-directory: ./wp-android-emini
