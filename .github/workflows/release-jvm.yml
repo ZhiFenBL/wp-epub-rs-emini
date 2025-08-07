@@ -254,6 +254,21 @@ jobs:
         with:
           name: windows-jar
           path: ${{ env.JVM_WORKING_DIR }}/exe4j
+
+      - name: Rename Windows Jar File
+        run: |
+          for original_file in ${{ env.JVM_WORKING_DIR }}/exe4j/windows-jar/*.jar; do
+            if [ -f "$original_file" ]; then
+              new_name="WattDownload.jar"
+              
+              echo "Renaming jar to $new_name"
+              mv "$original_file" "${{ env.JVM_WORKING_DIR }}/exe4j/windows-jar/$new_name"
+            else
+              echo "Warning: No matching JARs found with pattern 'app-*.jar'. Nothing to rename."
+              # Depending on your needs, you might want to fail the build here instead
+              # exit 1
+            fi
+          done
   
       - name: Download and Extract exe4j
         working-directory: ${{ env.JVM_WORKING_DIR }}
