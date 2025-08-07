@@ -1,3 +1,5 @@
+val buildUniversalApk = providers.gradleProperty("buildUniversalApk").forUseAtConfigurationTime().orNull == "true"
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -49,7 +51,7 @@ android {
         // This block configures splitting based on Application Binary Interface (ABI)
         abi {
             // Enables the generation of separate APKs for each ABI.
-            isEnable = true
+            isEnable = !buildUniversalApk
 
             // Clears the list of ABIs, so we only build for the ones we explicitly include.
             reset()
