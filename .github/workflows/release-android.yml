@@ -93,34 +93,34 @@ jobs:
       working-directory: ./wp-android-emini
       run: chmod +x gradlew
       
-    - name: Build Release APK with Gradle Properties
+    - name: Build Release APKs (Split and Universal)
       working-directory: ./wp-android-emini
       run: |
         TAG_NAME=${{ github.ref_name }}
-        
+       
         # Calculate a version code from the tag.
-        # Formula: Major * 10000 + Minor * 100 + Patch
-        # Example: 1.2.3  -> 1*10000 + 2*100 + 3 = 10203
         VERSION_CODE=$(echo $TAG_NAME | awk -F. '{ print ($1 * 10000) + ($2 * 100) + $3 }')
-        
+       
         echo "Using Version Name: $TAG_NAME"
         echo "Calculated Version Code: $VERSION_CODE"
 
-        # Define common Gradle properties to avoid repetition
-        GRADLE_PROPS=(
-          "-PciVersionCode=$VERSION_CODE"
-          "-PciVersionName=$TAG_NAME"
-          "-Pandroid.injected.signing.store.file=${{ github.workspace }}/wp-android-emini/app/release.p12"
-          "-Pandroid.injected.signing.store.password='${{ secrets.RELEASE_KEYSTORE_PASSWORD }}'"
-          "-Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}'"
-          "-Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'"
-        )
-
         echo "Building SPLIT APKs..."
-        ./gradlew assembleRelease "${GRADLE_PROPS[@]}"
+        ./gradlew assembleRelease \
+          -PciVersionCode=$VERSION_CODE \
+          -PciVersionName=$TAG_NAME \
+          -Pandroid.injected.signing.store.file=${{ github.workspace }}/wp-android-emini/app/release.p12 \
+          -Pandroid.injected.signing.store.password='${{ secrets.RELEASE_KEYSTORE_PASSWORD }}' \
+          -Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}' \
+          -Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'
 
         echo "Building UNIVERSAL APK..."
-        ./gradlew assembleRelease -PbuildUniversalApk=true "${GRADLE_PROPS[@]}"
+        ./gradlew assembleRelease -PbuildUniversalApk=true \
+          -PciVersionCode=$VERSION_CODE \
+          -PciVersionName=$TAG_NAME \
+          -Pandroid.injected.signing.store.file=${{ github.workspace }}/wp-android-emini/app/release.p12 \
+          -Pandroid.injected.signing.store.password='${{ secrets.RELEASE_KEYSTORE_PASSWORD }}' \
+          -Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}' \
+          -Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'
 
     - name: Rename APKs for Release
       working-directory: ./wp-android-emini
