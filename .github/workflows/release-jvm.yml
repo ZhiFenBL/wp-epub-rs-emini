@@ -255,19 +255,17 @@ jobs:
           name: windows-jar
           path: ${{ env.JVM_WORKING_DIR }}/exe4j
 
-      - name: Rename Windows Jar File
-        working-directory: ${{ env.JVM_WORKING_DIR }}
+      - name: Rename Downloaded JAR
+        working-directory: ${{ env.JVM_WORKING_DIR }}/exe4j # This should be ./wp-jvm-emini
         shell: pwsh
         run: |
-          # <<< FIX: The path is now relative to the working directory.
-          # The download-artifact action creates a folder named after the artifact ('windows-jar')
-          $jarDirectory = "./exe4j/windows-jar"
+          # <<< FIX: The path now correctly points to the folder created by download-artifact.
+          $jarDirectory = "./windows-jar"
           
           # Find the first file ending with .jar in that directory
           $original_file = Get-ChildItem -Path $jarDirectory -Filter "*.jar" | Select-Object -First 1
           
           if ($original_file) {
-            # <<< FIX: The destination for the renamed file is now also corrected.
             $new_path = Join-Path -Path $jarDirectory -ChildPath "WattDownload.jar"
             echo "Renaming '$($original_file.Name)' to 'WattDownload.jar' inside '$jarDirectory'"
             Rename-Item -Path $original_file.FullName -NewName $new_path
