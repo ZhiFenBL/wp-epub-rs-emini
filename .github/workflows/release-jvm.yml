@@ -256,19 +256,23 @@ jobs:
           path: ${{ env.JVM_WORKING_DIR }}/exe4j
 
       - name: Rename Windows Jar File
+        shell: pwsh
         run: |
-          for original_file in ${{ env.JVM_WORKING_DIR }}/exe4j/windows-jar/*.jar; do
-            if [ -f "$original_file" ]; then
-              new_name="WattDownload.jar"
-              
-              echo "Renaming jar to $new_name"
-              mv "$original_file" "${{ env.JVM_WORKING_DIR }}/exe4j/windows-jar/$new_name"
-            else
-              echo "Warning: No matching JARs found with pattern 'app-*.jar'. Nothing to rename."
-              # Depending on your needs, you might want to fail the build here instead
-              # exit 1
-            fi
-          done
+          # Define the path to the directory containing the JAR
+          $jarDirectory = "${{ env.JVM_WORKING_DIR }}/exe4j/windows-jar"
+          
+          # Find the first file ending with .jar in that directory
+          $original_file = Get-ChildItem -Path $jarDirectory -Filter "*.jar" | Select-Object -First 1
+          
+          # Check if a file was actually found
+          if ($original_file) {
+            $new_name = "WattDownload.jar"
+            echo "Renaming '$($original_file.Name)' to '$new_name'"
+            Rename-Item -Path $original_file.FullName -NewName $new_name
+          } else {
+            echo "Warning: No matching JAR file found in '$jarDirectory'. Nothing to rename."
+            # exit 1 # Uncomment to fail the build if no JAR is found
+          }
   
       - name: Download and Extract exe4j
         working-directory: ${{ env.JVM_WORKING_DIR }}
