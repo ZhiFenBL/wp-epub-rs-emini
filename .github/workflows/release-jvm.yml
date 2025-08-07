@@ -230,7 +230,7 @@ jobs:
         with:
           name: windows-jar
           # This path uses a wildcard to grab all windows JARs
-          path: ${{ env.JVM_WORKING_DIR }}/app/build/libs/*-windows-*.jar
+          path: ${{ env.JVM_WORKING_DIR }}/app/build/libs/windows-*.jar
           if-no-files-found: error
 
   build-windows-exe:
