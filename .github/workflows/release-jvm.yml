@@ -225,8 +225,68 @@ jobs:
           path: ${{ env.JVM_WORKING_DIR }}/app/build/libs/*-wprust-*.jar
           if-no-files-found: error
 
-  release:
+      - name: Upload Windows Jar (For exe)
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-jar
+          # This path uses a wildcard to grab all windows JARs
+          path: ${{ env.JVM_WORKING_DIR }}/app/build/libs/*-windows-*.jar
+          if-no-files-found: error
+
+  build-windows-exe:
     needs: swing-build
+    runs-on: windows-2025
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '24'      # See 'Options' for more details
+          distribution: 'graalvm' # See 'Supported distributions' for available options
+          
+      - name: Build JRE
+        working-directory: ${{ env.JVM_WORKING_DIR }}
+        run: jlink --add-modules java.desktop,java.logging --compress zip-9 --no-header-files --no-man-pages --strip-debug --output ./jre
+
+      - name: Download Windows Jar
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-jar
+          path: ${{ env.JVM_WORKING_DIR }}/exe4j
+  
+      - name: Download and Extract exe4j
+        working-directory: ${{ env.JVM_WORKING_DIR }}
+        run: |
+          # Use relative paths. '.' refers to the current working directory.
+          Invoke-WebRequest -Uri "https://download.ej-technologies.com/exe4j/exe4j_windows-x64_10_0.zip" -OutFile ".\exe4j.zip"
+          Expand-Archive -Path ".\exe4j.zip" -DestinationPath ".\exe4j"
+
+      - name: License exe4j
+        working-directory: ${{ env.JVM_WORKING_DIR }}
+        run: |
+          # The command is now relative to the working directory
+          .\exe4j\exe4j9\bin\exe4jc.exe --license="${{ secrets.EXE4J_LICENSE }}" --require-license
+
+      - name: Create EXE using exe4j
+        working-directory: ${{ env.JVM_WORKING_DIR }}
+        run: |
+          .\exe4j\exe4j9\bin\exe4jc.exe ".\exe4j\config.exe4j"
+
+      - name: Verify exe4j Directory
+        run: |
+          Get-ChildItem -Path "./"
+
+      - name: Upload Uber JAR and EXE as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x86_64-wprust-${{ github.run_id }}-with-jre
+          path: |
+            ${{ env.JVM_WORKING_DIR }}/jre
+            ${{ env.JVM_WORKING_DIR }}/**/WattDownload.exe
+
+  release:
+    needs: build-windows-exe
     runs-on: ubuntu-latest
    
     steps:      
@@ -236,6 +296,13 @@ jobs:
           # Use a pattern to download only the backend artifacts
           pattern: epub-uniffi-builds-*
           path: ./backend-artifacts
+
+      - name: Download exe4j windows build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # Use a pattern to download only the backend artifacts
+          name: windows-x86_64-wprust-${{ github.run_id }}-with-jre
+          path: ./windows-x86_64-wprust-with-jre-${{ github.ref_name }}
 
       - name: Package backend artifacts into a single zip
         run: |
@@ -251,5 +318,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            windows-x86_64-wprust-with-jre-${{ github.ref_name }}
             release-jars/*.jar
             jvm-backend-${{ github.ref_name }}.zip
