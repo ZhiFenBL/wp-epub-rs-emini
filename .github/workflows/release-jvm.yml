@@ -1,4 +1,4 @@
-name: JVM CI
+name: JVM Release
 
 on:
   push:
@@ -220,7 +220,36 @@ jobs:
       - name: Upload Built Jars
         uses: actions/upload-artifact@v4
         with:
-          name: wp-jvm-emini-release-jars
+          name: release-jars
           # This path uses a wildcard to grab all renamed JARs
           path: ${{ env.JVM_WORKING_DIR }}/app/build/libs/*-wprust-*.jar
           if-no-files-found: error
+
+  release:
+    needs: swing-build
+    runs-on: ubuntu-latest
+   
+    steps:      
+      - name: Download backend build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # Use a pattern to download only the backend artifacts
+          pattern: epub-uniffi-builds-*
+          path: ./backend-artifacts
+
+      - name: Package backend artifacts into a single zip
+        run: |
+          zip -r jvm-backend-${{ github.ref_name }}.zip ./backend-artifacts
+     
+      - name: Download release jars
+        uses: actions/download-artifact@v4
+        with:
+          name: release-jars
+          path: ./release-jars
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-jars/*.jar
+            jvm-backend-${{ github.ref_name }}.zip
