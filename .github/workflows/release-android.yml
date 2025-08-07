@@ -106,13 +106,21 @@ jobs:
         echo "Using Version Name: $TAG_NAME"
         echo "Calculated Version Code: $VERSION_CODE"
 
-        ./gradlew assembleRelease \
-          -PciVersionCode=$VERSION_CODE \
-          -PciVersionName=$TAG_NAME \
-          -Pandroid.injected.signing.store.file=${{ github.workspace }}/wp-android-emini/app/release.p12 \
-          -Pandroid.injected.signing.store.password='${{ secrets.RELEASE_KEYSTORE_PASSWORD }}' \
-          -Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}' \
-          -Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'
+        # Define common Gradle properties to avoid repetition
+        GRADLE_PROPS=(
+          "-PciVersionCode=$VERSION_CODE"
+          "-PciVersionName=$TAG_NAME"
+          "-Pandroid.injected.signing.store.file=${{ github.workspace }}/wp-android-emini/app/release.p12"
+          "-Pandroid.injected.signing.store.password='${{ secrets.RELEASE_KEYSTORE_PASSWORD }}'"
+          "-Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}'"
+          "-Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'"
+        )
+
+        echo "Building SPLIT APKs..."
+        ./gradlew assembleRelease "${GRADLE_PROPS[@]}"
+
+        echo "Building UNIVERSAL APK..."
+        ./gradlew assembleRelease -PbuildUniversalApk=true "${GRADLE_PROPS[@]}"
 
     - name: Rename APKs with Git Tag
       working-directory: ./wp-android-emini
@@ -131,7 +139,7 @@ jobs:
             renamed_base="${base_name/app/wprust}"
             
             # Construct the new filename using the renamed base and our explicit variable
-            new_name="${renamed_base}-${TAG_NAME}.apk"
+            new_name="android-${renamed_base}-${TAG_NAME}.apk"
     
             echo "Renaming $(basename "$apk_file") to $new_name"
             mv "$apk_file" "$RELEASE_DIR/$new_name"
@@ -157,7 +165,7 @@ jobs:
           path: ./backend-${{ github.ref_name }}
 
       - name: Rezip backend-${{ github.ref_name }}
-        run: zip -r backend-${{ github.ref_name }}.zip backend-${{ github.ref_name }}
+        run: zip -r android-backend-${{ github.ref_name }}.zip backend-${{ github.ref_name }}
       
       - name: Download release apks
         uses: actions/download-artifact@v4
@@ -170,4 +178,4 @@ jobs:
         with:
           files: |
             release-apks/*.apk
-            backend-${{ github.ref_name }}.zip
+            android-backend-${{ github.ref_name }}.zip
