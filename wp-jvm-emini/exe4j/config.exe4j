@@ -22,7 +22,7 @@
       <envVar name="WATTDOWNLOAD_JDK" />
     </searchSequence>
     <classPath>
-      <archive location="WattDownload.jar" />
+      <archive location="windows-jar/WattDownload.jar" />
     </classPath>
   </java>
 </exe4j>
